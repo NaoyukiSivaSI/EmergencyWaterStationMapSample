@@ -415,7 +415,7 @@ legend.onAdd = () => {
     + '<i style="background:#9aa5b1"></i>記録なし';
   return d;
 };
-legend.addTo(map);
+if(map) legend.addTo(map);
 
 function lowCount(siteId){
   const th = db.settings.threshold;
