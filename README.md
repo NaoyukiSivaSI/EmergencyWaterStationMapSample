@@ -7,11 +7,22 @@
 
 **https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/**
 
-| ページ | URL |
-| --- | --- |
-| トップ（案内） | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ |
-| **アプリ本体 rev3**（最新・海外対応） | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev3.html |
-| アプリ本体 rev2（国内向け） | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev2.html |
+トップページから rev0〜rev3 を選んで開けます。
+
+| 版 | 内容 | URL |
+| --- | --- | --- |
+| （トップ） | 版の選択ページ | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ |
+| **rev3** | **最新・推奨。** rev2 ＋ 海外対応（世界地図） | [ewsmapping_rev3.html](https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev3.html) |
+| rev2 | 国内向け。経路案内・診断機能あり | [ewsmapping_rev2.html](https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev2.html) |
+| rev1 | 旧版。経路案内なし | [ewsmapping_rev1.html](https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev1.html) |
+| rev0 | 初版（2026-08-17）の不具合修正版。参考用 | [ewsmapping_rev0.html](https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev0.html) |
+
+> **rev1・rev2・rev3 は同じ保存領域（localStorage の `ewsMapData_v2`）を共有します。**
+> 版を切り替えても同じデータが表示されるため、比較検証に使えます。
+> rev0 のみ保存先が異なり（`photoGpsSurveyRecords`）、データは共有されません。
+
+以下の説明は **rev3 / rev2** についてのものです。rev1 は「ここへ行く」（経路案内）を、
+rev0 は編集・個別削除・バックアップ・地図クリックでの座標指定を持ちません。
 
 > **スマートフォンで使う場合は、必ず上記の `https://` のURLから開いてください。**
 > HTMLファイルを端末にダウンロードして直接開く（`file://`）と、ブラウザのセキュリティ制約により

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>応急給水拠点マップ現地調査　260817試作版</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+ integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:#f4f6f8;color:#222}
+header{background:#1769aa;color:#fff;padding:14px 16px;font-size:20px;font-weight:700}
+main{display:grid;grid-template-columns:360px 1fr;height:calc(100vh - 56px)}
+.panel{background:#fff;padding:16px;overflow:auto;border-right:1px solid #ddd}
+#map{height:100%;min-height:500px}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,select,textarea,button{font:inherit}
+input[type=text],input[type=file],select,textarea{width:100%;padding:9px;border:1px solid #bbb;border-radius:7px;background:#fff}
+textarea{min-height:80px;resize:vertical}
+button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer}
+.primary{background:#1769aa;color:#fff;width:100%;font-weight:700;margin-top:14px}
+.secondary{background:#e9eef3;color:#222}
+.danger{background:#d9534f;color:#fff}
+.info{font-size:13px;background:#eef6ff;border-left:4px solid #1769aa;padding:9px;margin:10px 0}
+#preview{max-width:100%;max-height:180px;display:none;border-radius:8px;margin-top:8px}
+.coords{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.status{font-size:13px;color:#555;margin-top:8px;white-space:pre-wrap}
+.count{font-size:13px;margin:10px 0;color:#555}
+.popup-img{max-width:220px;max-height:160px;display:block;margin-top:6px}
+.small{font-size:12px;color:#666}
+@media(max-width:800px){
+ main{display:block;height:auto}
+ .panel{border-right:0}
+ #map{height:55vh;min-height:360px}
+ header{font-size:18px}
+}
+</style>
+</head>
+<body>
+<header>📷 応急給水拠点マップ【現地調査】（試作版）</header>
+<main>
+<section class="panel">
+  <div class="info">
+    写真にGPS（緯度・経度）が記録されている場合は自動取得します。<br>
+    GPSのない写真では「現在地を取得」を使えます。
+  </div>
+
+  <label>写真</label>
+  <input id="photo" type="file" accept="image/*">
+  <img id="preview" alt="写真プレビュー">
+
+  <label>都道府県</label><select id="prefecture"><option value="">選択してください</option>    <option>北海道</option>
+    <option>青森県</option>
+    <option>岩手県</option>
+    <option>宮城県</option>
+    <option>秋田県</option>
+    <option>山形県</option>
+    <option>福島県</option>
+    <option>茨城県</option>
+    <option>栃木県</option>
+    <option>群馬県</option>
+    <option>埼玉県</option>
+    <option>千葉県</option>
+    <option>東京都</option>
+    <option>神奈川県</option>
+    <option>新潟県</option>
+    <option>富山県</option>
+    <option>石川県</option>
+    <option>福井県</option>
+    <option>山梨県</option>
+    <option>長野県</option>
+    <option>岐阜県</option>
+    <option>静岡県</option>
+    <option>愛知県</option>
+    <option>三重県</option>
+    <option>滋賀県</option>
+    <option>京都府</option>
+    <option>大阪府</option>
+    <option>兵庫県</option>
+    <option>奈良県</option>
+    <option>和歌山県</option>
+    <option>鳥取県</option>
+    <option>島根県</option>
+    <option>岡山県</option>
+    <option>広島県</option>
+    <option>山口県</option>
+    <option>徳島県</option>
+    <option>香川県</option>
+    <option>愛媛県</option>
+    <option>高知県</option>
+    <option>福岡県</option>
+    <option>佐賀県</option>
+    <option>長崎県</option>
+    <option>熊本県</option>
+    <option>大分県</option>
+    <option>宮崎県</option>
+    <option>鹿児島県</option>
+    <option>沖縄県</option>
+  </select>
+  <label>市区町村</label><input id="city" type="text" placeholder="例：名古屋市">
+  <label>施設番号</label><input id="facilityNo" type="text" placeholder="例：001">
+  <label>区分</label><select id="category"><option value="">選択してください</option><option>応急給水</option><option>仮設給水所</option><option>井戸</option><option>飲料水配布</option><option>生活用水配布</option></select>
+  <label>住所</label><input id="address" type="text" placeholder="住所を入力">
+  <label>緯度・経度</label><div class="coords"><input id="lat" type="text" placeholder="緯度"><input id="lng" type="text" placeholder="経度"></div>
+  <div class="row"><button class="secondary" id="gpsBtn">📍 現在地を取得</button><button class="secondary" id="clearGpsBtn">クリア</button></div>
+  <div id="gpsStatus" class="status"></div>
+  <label>位置精度レベル</label><select id="accuracyLevel"><option value="">選択してください</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+  <label>開設状況</label><select id="status"><option value="">選択してください</option><option>開設</option><option>閉鎖</option><option>開設（不明）</option><option>不明</option></select>
+  <label>開設日</label><input id="openDate" type="date">
+  <label>閉鎖日</label><input id="closeDate" type="date">
+  <label>開設時間</label><input id="openTime" type="text" placeholder="例：9:00～17:00">
+  <label>備考</label><textarea id="note" placeholder="その他の情報"></textarea>
+  <label>参照URL</label><input id="refUrl" type="url" placeholder="https://...">
+  <button class="primary" id="addBtn">➕ 地図に登録</button>
+
+  <div class="row">
+    <button class="secondary" id="exportBtn">CSV出力</button>
+    <button class="danger" id="clearAllBtn">全データ削除</button>
+  </div>
+  <div id="count" class="count"></div>
+  <div class="small">※試作版ではデータをこのブラウザのlocalStorageに保存します。写真もブラウザ内に保存するため、大量データには不向きです。</div>
+</section>
+
+<section id="map"></section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
+<script>
+const map = L.map('map').setView([35.1815,136.9066], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+let records = [];
+try { records = JSON.parse(localStorage.getItem('photoGpsSurveyRecords') || '[]'); } catch(e) { records=[]; }
+let markers = [];
+
+const $ = id => document.getElementById(id);
+
+function validCoord(lat,lng){
+  return Number.isFinite(lat) && Number.isFinite(lng) && lat>=-90 && lat<=90 && lng>=-180 && lng<=180;
+}
+function esc(s){
+  return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function save(){ localStorage.setItem('photoGpsSurveyRecords', JSON.stringify(records)); }
+
+function render(){
+  markers.forEach(m=>m.remove()); markers=[];
+  records.forEach(r=>{
+    if(!validCoord(r.lat,r.lng)) return;
+    const m=L.marker([r.lat,r.lng]).addTo(map);
+    let img=r.photoData ? `<img class="popup-img" src="${r.photoData}" alt="写真">` : '';
+    const url = r.refUrl ? `<br><a href="${esc(r.refUrl)}" target="_blank" rel="noopener">参照URL</a>` : '';
+    m.bindPopup(`<b>ID：${esc(r.id)}</b><br>${esc(r.prefecture||'')} ${esc(r.city||'')}<br>
+      施設番号：${esc(r.facilityNo||'')}<br>区分：${esc(r.category||'')}<br>住所：${esc(r.address||'')}<br>
+      緯度：${r.lat}<br>経度：${r.lng}<br>位置精度レベル：${esc(r.accuracyLevel||'')}<br>
+      開設状況：${esc(r.status||'')}<br>開設日：${esc(r.openDate||'')}<br>閉鎖日：${esc(r.closeDate||'')}<br>
+      開設時間：${esc(r.openTime||'')}<br>備考：${esc(r.note||'')}${url}${img}`);
+    markers.push(m);
+  });
+  $('count').textContent=`登録件数：${records.length} 件`;
+}
+render();
+
+$('photo').addEventListener('change', async e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  $('preview').src=URL.createObjectURL(file);
+  $('preview').style.display='block';
+  $('gpsStatus').textContent='写真を解析中…';
+  try{
+    const gps=await exifr.gps(file);
+    if(gps && validCoord(gps.latitude,gps.longitude)){
+      $('lat').value=gps.latitude.toFixed(7);
+      $('lng').value=gps.longitude.toFixed(7);
+      $('gpsStatus').textContent='✓ 写真のEXIFからGPSを取得しました。';
+    }else{
+      $('gpsStatus').textContent='写真にGPS情報がありません。「現在地を取得」を使用してください。';
+    }
+  }catch(err){
+    $('gpsStatus').textContent='EXIFの読み取りに失敗しました。現在地取得をお試しください。';
+  }
+});
+
+$('gpsBtn').addEventListener('click',()=>{
+  if(!navigator.geolocation){
+    $('gpsStatus').textContent='このブラウザでは位置情報を利用できません。'; return;
+  }
+  $('gpsStatus').textContent='現在地を取得しています…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    $('lat').value=pos.coords.latitude.toFixed(7);
+    $('lng').value=pos.coords.longitude.toFixed(7);
+    $('gpsStatus').textContent=`✓ 現在地を取得しました（精度 約${Math.round(pos.coords.accuracy)} m）。`;
+    map.setView([pos.coords.latitude,pos.coords.longitude],16);
+  },err=>{
+    $('gpsStatus').textContent='位置情報を取得できませんでした。ブラウザの位置情報許可を確認してください。';
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+});
+
+$('clearGpsBtn').addEventListener('click',()=>{
+  $('lat').value=''; $('lng').value=''; $('gpsStatus').textContent='';
+});
+
+$('addBtn').addEventListener('click',()=>{
+  const lat=parseFloat($('lat').value), lng=parseFloat($('lng').value);
+  if(!validCoord(lat,lng)){ alert('緯度・経度を正しく入力または取得してください。'); return; }
+  const file=$('photo').files[0];
+  const finish=(photoData)=>{
+    records.push({
+      id:String(Date.now()), prefecture:$('prefecture').value, city:$('city').value,
+      facilityNo:$('facilityNo').value, category:$('category').value, address:$('address').value,
+      lat,lng, accuracyLevel:$('accuracyLevel').value, status:$('status').value,
+      openDate:$('openDate').value, closeDate:$('closeDate').value, openTime:$('openTime').value,
+      note:$('note').value, refUrl:$('refUrl').value, photoData:photoData||'',
+      date:new Date().toLocaleString('ja-JP')
+    });
+    try{
+      save();
+    }catch(e){
+      alert('保存容量を超えた可能性があります。試作版では写真を大量に保存できません。');
+      records.pop(); return;
+    }
+    render(); map.setView([lat,lng],16);
+    resetForm();
+    alert('地図に登録しました。');
+  };
+  if(file){
+    const reader=new FileReader();
+    reader.onload=()=>finish(reader.result);
+    reader.readAsDataURL(file);
+  }else finish('');
+});
+
+function resetForm(){
+  $('photo').value=''; $('preview').style.display='none'; $('preview').src='';
+  $('lat').value=''; $('lng').value=''; $('prefecture').value=''; $('city').value='';
+  $('facilityNo').value=''; $('category').value=''; $('address').value=''; $('accuracyLevel').value='';
+  $('status').value=''; $('openDate').value=''; $('closeDate').value=''; $('openTime').value='';
+  $('note').value=''; $('refUrl').value=''; $('gpsStatus').textContent='';
+}
+$('clearAllBtn').addEventListener('click',()=>{
+  if(confirm('登録したデータをすべて削除します。よろしいですか？')){
+    records=[]; save(); render();
+  }
+});
+
+$('exportBtn').addEventListener('click',()=>{
+  if(!records.length){alert('出力するデータがありません。');return;}
+  const header=['ID','都道府県','市区町村','施設番号','区分','住所','緯度','経度','位置精度レベル','開設状況','開設日','閉鎖日','開設時間','備考','参照URL','登録日時'];
+  const rows=records.map(r=>[r.id,r.prefecture,r.city,r.facilityNo,r.category,r.address,r.lat,r.lng,r.accuracyLevel,r.status,r.openDate,r.closeDate,r.openTime,r.note,r.refUrl,r.date]);
+  const csv='\uFEFF'+[header,...rows].map(row=>row.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='photo_gps_survey.csv'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>
