@@ -10,7 +10,8 @@
 | ページ | URL |
 | --- | --- |
 | トップ（案内） | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ |
-| アプリ本体 rev2 | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev2.html |
+| **アプリ本体 rev3**（最新・海外対応） | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev3.html |
+| アプリ本体 rev2（国内向け） | https://naoyukisivasi.github.io/EmergencyWaterStationMapSample/ewsmapping_rev2.html |
 
 > **スマートフォンで使う場合は、必ず上記の `https://` のURLから開いてください。**
 > HTMLファイルを端末にダウンロードして直接開く（`file://`）と、ブラウザのセキュリティ制約により
@@ -96,7 +97,19 @@
   （`施設番号, 施設名称, 区分, 飲用可否, 都道府県, 市区町村, 住所, 緯度, 経度, 位置精度レベル, 開設状況, 開設日, 閉鎖日, 開設時間, タンク容量L, 備考, 参照URL, 登録者`／「CSV：拠点一覧」の出力と同じ形式）
 - リポジトリ同梱の [`sample_kumamoto_r8_20260803.json`](sample_kumamoto_r8_20260803.json) をバックアップ復元から読み込むと、熊本市の拠点10件で動作を確認できます（給水記録は入っていないため、マーカーは全て灰色になります。色分けを試すには「動作確認用のダミーデータを入れる」をお使いください）
 
-**表示の設定** — 残量しきい値／地図の背景（国土地理院 標準・淡色・航空写真／OpenStreetMap）／「ここへ行く」の移動手段（車・徒歩・公共交通機関・自転車）
+**表示の設定** — 残量しきい値／地図の背景（下記）／「ここへ行く」の移動手段（車・徒歩・公共交通機関・自転車）
+
+#### 地図の背景（rev3 で海外対応）
+
+| 分類 | 選択肢 | 用途 |
+| --- | --- | --- |
+| 日本国内（詳細） | 国土地理院 標準地図／淡色地図／航空写真 | **国内はこちらを推奨。**海外にはデータがなく白地図になります |
+| 世界 | OpenFreeMap Liberty／Bright／Positron／Dark | **海外拠点はこちら。**全世界をカバーします |
+| その他 | OpenStreetMap 標準 | 検証用。利用ポリシー上、本番運用には使えません |
+
+「世界」の地図は [OpenFreeMap](https://openfreemap.org/)（OpenStreetMap ベースのベクタタイル）を使用しています。
+APIキー不要・件数無制限・商用利用可で、表示には **WebGL 対応ブラウザ**が必要です。
+WebGL が使えない端末では、警告を表示したうえで自動的に国土地理院 標準地図へ切り替わります。
 
 **データの管理** — 使用容量の表示／動作確認用のダミーデータ投入／全データ削除
 
@@ -123,7 +136,8 @@
 単一のHTMLファイルで動作します（ビルド不要）。
 
 - 地図：[Leaflet](https://leafletjs.com/) 1.9.4
-- 背景地図：[地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)（国土地理院）／[OpenStreetMap](https://www.openstreetmap.org/)
+- ベクタ地図描画（rev3）：[MapLibre GL JS](https://maplibre.org/) 5.24.0 ＋ [maplibre-gl-leaflet](https://github.com/maplibre/maplibre-gl-leaflet) 0.1.4
+- 背景地図：[地理院タイル](https://maps.gsi.go.jp/development/ichiran.html)（国土地理院）／[OpenFreeMap](https://openfreemap.org/)（rev3）／[OpenStreetMap](https://www.openstreetmap.org/)
 - 写真のGPS読み取り：[exifr](https://github.com/MikeKovarik/exifr) 7.1.3
 - 経路案内：[Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started)（**APIキー・課金は不要**）
 - データ保存：ブラウザの localStorage
